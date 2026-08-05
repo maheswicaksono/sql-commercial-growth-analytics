@@ -54,7 +54,7 @@ OUTPUTS:
   - total_gtv: Gross Transaction Value (currency)
   - total_net_revenue: GTV × 2.5% take rate (currency)
   - aov: Average Order Value per transaction
-  - active_paying_user: Distinct users with successful txns
+  - active_paying_user: Distinct users with successful transactions
   - total_orders: Count of successful transactions
   - mom_gtv_growth_pct: Month-over-month growth %
   - mom_net_revenue_growth_pct: MoM revenue growth %
