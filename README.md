@@ -87,6 +87,7 @@ Key decision: Rounding only at final output, preserve raw precision in calculati
 
 ## Queries
 
+```sql
 df_result = q("""
 with raw_monthly as (select strftime('%Y-%m', created_at) AS month, count (trx_id) as total_orders, count (distinct (user_id)) as active_paying_user, sum (amount) as total_gtv_raw, sum (amount * 0.025) as total_net_revenue_raw
 from transactions
@@ -110,7 +111,7 @@ order by month asc;
 
 """)
 display(df_result.head(20))
-
+```
 
 ## What I'd Do Next
 
