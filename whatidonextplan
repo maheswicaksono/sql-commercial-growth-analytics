@@ -1,0 +1,388 @@
+# What I'd Do Next: Action Plan
+
+## Overview
+
+Current analysis - Next steps turn it
+
+---
+
+## 🔴 Priority 1: Cohort Retention Analysis (HIGH IMPACT)
+
+### Why This Matters Most
+
+Current question: "Are users growing?"  
+Real question: "Are users *staying*?"
+
+If 2025 cohorts have 90% churn and 2026 cohorts have 50% churn, you're in trouble — acquisition is hiding churn.
+
+### What You'd Build
+
+```sql
+WITH first_transaction AS (
+  SELECT user_id, 
+         strftime('%Y-%m', MIN(created_at)) as cohort_month
+  FROM transactions
+  WHERE status = 'success'
+  GROUP BY user_id
+),
+
+monthly_activity AS (
+  SELECT user_id, 
+         strftime('%Y-%m', created_at) as activity_month
+  FROM transactions
+  WHERE status = 'success'
+  GROUP BY user_id, activity_month
+),
+
+cohort_retention AS (
+  SELECT ft.cohort_month,
+         (CAST((SELECT strftime('%m', activity_month) - 
+                       strftime('%m', ft.cohort_month)) AS INT) % 12) 
+         as months_since_first,
+         COUNT(DISTINCT ma.user_id) as active_users
+  FROM first_transaction ft
+  LEFT JOIN monthly_activity ma 
+    ON ft.user_id = ma.user_id
+    AND ma.activity_month >= ft.cohort_month
+  GROUP BY ft.cohort_month, months_since_first
+)
+
+SELECT * FROM cohort_retention
+ORDER BY cohort_month, months_since_first
+```
+
+### Output: Retention Table
+
+```
+Cohort    | M0   | M1   | M2   | M3   | M4   | M5   | M6
+----------|------|------|------|------|------|------|------
+2025-01   | 100% | 45%  | 32%  | 28%  | 25%  | 22%  | 20%
+2025-02   | 100% | 52%  | 40%  | 35%  | 31%  | 28%  |
+2025-03   | 100% | 48%  | 38%  | 33%  | 29%  |
+2025-04   | 100% | 50%  | 42%  | 37%  |
+2026-01   | 100% | 58%  | 48%  |
+2026-02   | 100% | 60%  |
+2026-03   | 100% |
+```
+
+### What It Tells You
+
+- **2025 early cohorts decline to ~20%** → 80% churn by M6 (bad)
+- **2026 cohorts at 58-60% M1 retention** → Better retention than 2025 (good signal)
+- **Interpretation:** New cohorts might be stickier, OR too soon to tell for recent cohorts
+
+### Effort: 2-3 hours
+
+### Expected Impact: HIGH
+
+This single analysis could change the entire narrative:
+- If retention is terrible → growth is illusion (users churn faster than acquisition)
+- If retention is improving → cohort quality is getting better (strategy working)
+- If retention is stable → confirms AOV flatness is real issue (not cohort mix)
+
+---
+
+## 🟡 Priority 2: Jul Contraction Root Cause Analysis (MEDIUM IMPACT, URGENT)
+
+### Why This Matters
+
+Jul 2026 is the only negative month. Could be:
+- **Seasonal** (Eid holidays, monsoon, school holidays) → Not urgent
+- **Structural** (market saturation, competitive entry, churn spike) → Urgent
+
+### What You'd Build
+
+**Step 1: Seasonality Check**
+```sql
+-- Compare Jul 2026 to Jul 2025 (need full 2025 data)
+SELECT strftime('%Y-%m', created_at) as month,
+       COUNT(DISTINCT user_id) as users,
+       SUM(amount) as gtv
+FROM transactions
+WHERE strftime('%m', created_at) = '07'  -- July only
+GROUP BY month
+ORDER BY month
+```
+
+Expected output:
+```
+2025-07: 50K users, 25M GTV
+2026-07: 48K users, 22M GTV
+→ -4% year-over-year (consistent dip = seasonal)
+```
+
+**Step 2: Daily Breakdown**
+```sql
+-- See if dip is concentrated on certain days
+SELECT DATE(created_at) as day,
+       COUNT(*) as transactions,
+       SUM(amount) as daily_gtv
+FROM transactions
+WHERE strftime('%Y-%m', created_at) = '2026-07'
+GROUP BY day
+ORDER BY day
+```
+
+Expected output:
+```
+2026-07-01: 800 txns, 2M GTV (normal)
+2026-07-10: 600 txns, 1.8M GTV (holiday? weekend?)
+2026-07-20: 700 txns, 2.1M GTV (normal)
+```
+
+**Step 3: User Segment Check**
+```sql
+-- Did specific user types drop off?
+-- (requires user_type/segment field)
+SELECT user_segment,
+       COUNT(DISTINCT user_id) as users_jun,
+       COUNT(DISTINCT user_id) as users_jul
+FROM transactions
+WHERE strftime('%Y-%m', created_at) IN ('2026-06', '2026-07')
+GROUP BY user_segment
+```
+
+### Effort: 1-2 hours
+
+### Expected Impact: MEDIUM
+
+Knowing whether Jul is seasonal or structural completely changes recommendations:
+- Seasonal → Relax, monitor
+- Structural → Immediate action on CAC, product, competition
+
+---
+
+## 🟡 Priority 3: Segment Breakdown by Product Category (MEDIUM IMPACT)
+
+### Why This Matters
+
+"AOV is flat" might not be true for all products:
+- Loans: AOV up 5% (higher ticket items)
+- Insurance: AOV down 10% (cheaper product dominating)
+- Blended: AOV flat (because mix shifted to cheap products)
+
+If true, then strategy is different: steer users toward loans, not insurance.
+
+### What You'd Build
+
+```sql
+SELECT strftime('%Y-%m', created_at) as month,
+       product_category,
+       COUNT(DISTINCT user_id) as users,
+       COUNT(*) as orders,
+       ROUND(SUM(amount) / COUNT(*), 2) as aov,
+       ROUND(SUM(amount)) as gtv
+FROM transactions
+WHERE status = 'success'
+GROUP BY month, product_category
+ORDER BY month, product_category
+```
+
+### Output: Segment Growth Rates
+
+```
+Month    | Product  | AOV  | Users | GTV  | MoM Growth
+---------|----------|------|-------|------|----------
+2026-06  | Loans    | 500K | 5K    | 2.5M | +8%
+2026-07  | Loans    | 520K | 4.8K  | 2.5M | -4% (users down)
+---------|----------|------|-------|------|----------
+2026-06  | Insurance| 100K | 15K   | 1.5M | +12%
+2026-07  | Insurance| 98K  | 16K   | 1.6M | +7%
+```
+
+### What It Tells You
+
+- **Loans:** Mature product, users declining, AOV stable (high quality)
+- **Insurance:** Growing users but cheaper product (volume play)
+- **Implication:** Mix shift is why blended AOV is flat
+
+### Effort: 1 hour
+
+### Expected Impact: MEDIUM
+
+Identifies which products are levers you can pull:
+- Double down on loans (high AOV, but users declining → need new marketing)
+- Optimize insurance (growing but cheap → upsell add-ons)
+- Consider bundling (loan + insurance together)
+
+---
+
+## 🟢 Priority 4: ARPU Calculation (LOW EFFORT, USEFUL)
+
+### Why This Matters
+
+AOV (average order value) is transaction-level.  
+ARPU (average revenue per user) is user-level.
+
+Two different questions:
+- AOV flat = "users are spending same per transaction" ✓ (you know this)
+- ARPU declining = "total spend per user is dropping" ✗ (you don't know this yet)
+
+If AOV is flat but ARPU is declining → users are transacting **less frequently** (retention problem).
+
+### What You'd Build
+
+```sql
+SELECT strftime('%Y-%m', created_at) as month,
+       COUNT(DISTINCT user_id) as active_users,
+       ROUND(SUM(amount) / COUNT(DISTINCT user_id), 2) as arpu
+FROM transactions
+WHERE status = 'success'
+GROUP BY month
+ORDER BY month
+```
+
+### Output: User-Level Spending
+
+```
+Month    | ARPU    | MoM Change
+---------|---------|----------
+2025-06  | 5000    | 
+2025-07  | 5100    | +2%
+2025-08  | 4900    | -4%
+...
+2026-06  | 3200    | 
+2026-07  | 3100    | -3%
+```
+
+### What It Tells You
+
+- Flat AOV + declining ARPU = **users transacting less frequently** (retention)
+- Flat AOV + flat ARPU = **user mix shifting** (new users = old users in terms of spend)
+- Rising AOV + rising ARPU = **monetization improvement** (ideal)
+
+### Effort: 30 mins
+
+### Expected Impact: QUICK WIN
+
+Simple metric that gives you another angle on the problem.
+
+---
+
+## 🟢 Priority 5: Forecast Next 3 Months (LOW-MEDIUM EFFORT)
+
+### Why This Matters
+
+Current trend is declining. But **how fast** is it declining?
+
+Forecast answers: "If we do nothing, what happens in Q3-Q4 2026?"
+
+### What You'd Build
+
+Simple approach (30 mins):
+```python
+import pandas as pd
+from sklearn.linear_model import LinearRegression
+
+df = pd.read_sql_query("SELECT month, gtv FROM metrics ORDER BY month", conn)
+df['month_num'] = range(len(df))
+
+model = LinearRegression()
+model.fit(df[['month_num']], df['gtv'])
+
+# Forecast next 3 months
+future_months = [[len(df)], [len(df)+1], [len(df)+2]]
+predictions = model.predict(future_months)
+
+print(f"Aug 2026 forecast: {predictions[0]:.0f}M")
+print(f"Sep 2026 forecast: {predictions[1]:.0f}M")
+print(f"Oct 2026 forecast: {predictions[2]:.0f}M")
+```
+
+Medium approach (2 hours): Use ARIMA or Prophet for seasonality
+```python
+from statsmodels.tsa.arima.model import ARIMA
+
+model = ARIMA(df['gtv'], order=(1,1,1))
+results = model.fit()
+forecast = results.get_forecast(steps=3)
+print(forecast.conf_int())
+```
+
+### Output: GTV Projection
+
+```
+Jul 2026 (actual): 22M
+Aug 2026 (forecast): 21.5M ± 1.2M
+Sep 2026 (forecast): 21M ± 1.5M
+Oct 2026 (forecast): 20.5M ± 1.8M
+
+Trend: Declining 0.5-1M/month
+```
+
+### What It Tells You
+
+- **If forecast shows continued decline:** Need intervention now
+- **If forecast shows stabilization:** Jul might be temporary blip
+- **If forecast shows bottom then rebound:** Might be seasonal U-shape
+
+### Effort: 30 mins (simple) to 2 hours (rigorous)
+
+### Expected Impact: MEDIUM
+
+Gives leadership a forward-looking signal, not just backward-looking analysis.
+
+---
+
+## 🔵 Priority 6: CAC & Payback Period (HIGH EFFORT, STRATEGIC)
+
+### Why This Matters
+
+User growth is slowing. Why?
+
+Hypothesis: Customer Acquisition Cost (CAC) is rising, making it harder to acquire users profitably.
+
+### What You'd Need
+
+- Marketing spend data (by channel, by month)
+- Attribution model (which marketing created which users?)
+- Not available in current dataset
+
+### What You'd Build
+
+```sql
+SELECT month,
+       marketing_spend,
+       new_users_acquired,
+       (marketing_spend / new_users_acquired) as cac,
+       (user_lifetime_value / cac) as payback_months
+FROM marketing_metrics
+ORDER BY month
+```
+
+### Output: CAC Trend
+
+```
+Month    | Spend | New Users | CAC   | Payback (months)
+---------|-------|-----------|-------|----------
+2025-06  | 500M  | 100K      | 5K   | 4
+2025-07  | 550M  | 90K       | 6.1K | 5
+...
+2026-06  | 800M  | 60K       | 13.3K| 8
+2026-07  | 850M  | 50K       | 17K  | 10+
+```
+
+### What It Tells You
+
+- CAC rising + New users falling = Acquisition is becoming less efficient
+- Long payback period = Can't afford to keep acquiring
+
+### Effort: 3-4 hours (need to build attribution model)
+
+### Expected Impact: HIGH (but requires external data)
+
+This explains **why** user growth is slowing. Without it, you're guessing.
+
+---
+
+## Summary: Priority Order
+
+| Priority | Initiative | Effort | Impact | Timeline |
+|----------|-----------|--------|--------|----------|
+| 🔴 1 | Cohort Retention | 2-3h | HIGH | Do this FIRST |
+| 🟡 2 | Jul Root Cause | 1-2h | HIGH | Do ASAP (seasonal?) |
+| 🟡 3 | Segment Breakdown | 1h | MEDIUM | Do this week |
+| 🟢 4 | ARPU Calculation | 30m | MEDIUM | Quick win |
+| 🟢 5 | Forecast | 30m-2h | MEDIUM | Do this week |
+| 🔵 6 | CAC Analysis | 3-4h | HIGH | Need external data |
+
