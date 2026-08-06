@@ -6,7 +6,7 @@
 
 ##  Business Context
 
-This project analyzes 19 months of fintech transaction data (Feb 2025 – Jul 2026) to understand **what's driving growth** — is it user acquisition or monetization per user?
+This project analyzes 19 months of fintech transaction data (Feb 2025 – Jul 2026) to understand **what's driving growth** is it user acquisition or monetization per user?
 
 **Core finding:**
 - Growth is **volume-driven** — user acquisition is the primary lever
