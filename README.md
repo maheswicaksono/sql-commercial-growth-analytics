@@ -51,7 +51,9 @@ raw_monthly → lag_monthly → final SELECT
 ## SQL Query
 
 ```sql
-with raw_monthly as (select strftime('%Y-%m', created_at) AS month, count (trx_id) as total_orders, count (distinct (user_id)) as active_paying_user, sum (amount) as total_gtv_raw, sum (amount * 0.025) as total_net_revenue_raw
+with raw_monthly as (select strftime('%Y-%m', created_at) AS month, count (trx_id) as total_orders,
+count (distinct (user_id)) as active_paying_user, sum (amount) as total_gtv_raw,
+sum (amount * 0.025) as total_net_revenue_raw
 from transactions
 where status ='success'
 group by month
@@ -69,46 +71,39 @@ from raw_monthly
 )
 
 select month,
-  round(total_gtv_raw) as total_gtv,round(total_net_revenue_raw) as total_net_revenue, round(aov_raw, 2) as aov, active_paying_user, total_orders, round(((total_gtv_raw - prev_gtv_raw) * 100.0) / nullif(prev_gtv_raw, 0),2) as mom_gtv_growth_pct, round(((total_net_revenue_raw - prev_net_revenue) * 100.0) / nullif(prev_net_revenue, 0), 2) as mom_net_revenue_growth_pct, round(((active_paying_user - prev_active_pay_user) * 100.0) / nullif(prev_active_pay_user, 0), 2) as mom_user_growth_pct, round(((aov_raw - prev_aov) * 100.0) / nullif(prev_aov, 0), 2) as mom_aov_growth_pct
+round(total_gtv_raw) as total_gtv,round(total_net_revenue_raw) as total_net_revenue, round(aov_raw, 2) as aov,
+active_paying_user, total_orders, round(((total_gtv_raw - prev_gtv_raw) * 100.0) / nullif(prev_gtv_raw, 0),2) as mom_gtv_growth_pct, round(((total_net_revenue_raw - prev_net_revenue) * 100.0) / nullif(prev_net_revenue, 0), 2) as mom_net_revenue_growth_pct,
+round(((active_paying_user - prev_active_pay_user) * 100.0) / nullif(prev_active_pay_user, 0), 2) as mom_user_growth_pct,
+round(((aov_raw - prev_aov) * 100.0) / nullif(prev_aov, 0), 2) as mom_aov_growth_pct
 from lag_monthly
 order by month asc;
 ```
 
 ---
 
-## Python Visualization
+## Data Visualization
 
-```python
-fig, ax = plt.subplots(figsize=(10, 5), facecolor='#FAFAFA')
-
-ax.fill_between(df['month'], df['total_gtv'], alpha=0.15, color=BLUE)
-ax.plot(df['month'], df['total_gtv'], marker='o', color=BLUE, linewidth=2.5, markersize=5, label='GTV')
-ax.fill_between(df['month'], df['total_net_revenue'], alpha=0.2, color=GREEN)
-ax.plot(df['month'], df['total_net_revenue'], marker='s', color=GREEN, linewidth=2, markersize=4, label='Net Revenue')
-
-ax.set_title('GTV vs Net Revenue ', fontweight='bold', color='#1A3A5C', fontsize=12, pad=12)
-ax.yaxis.set_major_formatter(mticker.FuncFormatter(lambda x, _: f'{x/1e6:.1f}M'))
-ax.legend(fontsize=9)
-ax.tick_params(axis='x', rotation=45)
-
-plt.tight_layout()
-plt.savefig('01_gtv_vs_net_revenue.png', dpi=200, bbox_inches='tight', facecolor='#FAFAFA')
-plt.show()
-```
 <img width="989" height="490" alt="image" src="https://github.com/user-attachments/assets/ffd3f26c-5838-41b3-a1c0-156fc190a9d5" />
+<img width="990" height="490" alt="image" src="https://github.com/user-attachments/assets/7a7b13d1-32ca-4d76-879a-a50d364652a8" />
+<img width="989" height="490" alt="image" src="https://github.com/user-attachments/assets/6863bffe-26cc-464f-9753-a0556715f0ec" />
+<img width="990" height="490" alt="image" src="https://github.com/user-attachments/assets/bcc9b395-6f6a-4918-b558-3f2a89bf86ca" />
+<img width="989" height="490" alt="image" src="https://github.com/user-attachments/assets/5e296e0a-828d-436c-873f-c828c5c333b4" />
+<img width="990" height="490" alt="image" src="https://github.com/user-attachments/assets/d072e595-6f13-448c-b56d-a230735f43ed" />
+<img width="989" height="490" alt="image" src="https://github.com/user-attachments/assets/3e1137ff-c17e-4a15-b287-6f4d704dbc76" />
+<img width="989" height="490" alt="image" src="https://github.com/user-attachments/assets/502e37ae-8fc0-4aa9-92a9-f13aa138c3a8" />
+
 
 
 ---
 
 ## Next Steps (Prioritized by Impact × Effort)
 
-| Priority | Initiative | Effort | Impact | Status |
-|----------|------------|--------|--------|--------|
-| 🔴 **1** | **Cohort Retention Analysis** | 2–3h | HIGH | Planned |
-| 🟡 **2** | **Jul Contraction Root Cause** | 1–2h | HIGH | Planned |
-| 🟡 **3** | **Segment Breakdown by Product** | 1h | MEDIUM | Planned |
-| 🟢 **4** | **ARPU Calculation** | 30m | MEDIUM | ✅ Added to viz |
-| 🟢 **5** | **3-Month Forecast** | 30m–2h | MEDIUM | Planned |
+| Priority | Initiative | Impact | Status |
+|----------|------------|--------|--------|
+| 🔴 **1** | **Cohort Retention Analysis** | HIGH | Planned |
+| 🟡 **2** | **Jul Contraction Root Cause** | HIGH | Planned |
+| 🟡 **3** | **Segment Breakdown by Product** | MEDIUM | Planned |
+| 🟢 **4** | **3-Month Forecast** |MEDIUM | Planned |
 
 ### Priority 1 — Cohort Retention
 
