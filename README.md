@@ -84,13 +84,31 @@ order by month asc;
 ## Data Visualization
 
 <img width="989" height="490" alt="image" src="https://github.com/user-attachments/assets/ffd3f26c-5838-41b3-a1c0-156fc190a9d5" />
+Both metrics track together (flat take rate assumption). GTV peaks around mid-2025 at 50M+, then stabilizes around 20-30M in 2026. Perfect correlation expected because net revenue = GTV × 2.5%.
 <img width="990" height="490" alt="image" src="https://github.com/user-attachments/assets/7a7b13d1-32ca-4d76-879a-a50d364652a8" />
+Growth trajectory shows clear phases:
+- **Feb 2025:** +188% (base effect)
+- **Mar-Apr 2025:** +53-61% (hypergrowth cooling)
+- **May-Dec 2025:** +20-45% (normalizing)
+- **2026:** +3-30% (mature phase)
+- **Jul 2026:** -13% (🚨 first contraction)
 <img width="989" height="490" alt="image" src="https://github.com/user-attachments/assets/6863bffe-26cc-464f-9753-a0556715f0ec" />
+User base peaked mid-2025, now declining. Peak is annotated. Declining user acquisition is main concern — harder to grow user base despite continued efforts.
 <img width="990" height="490" alt="image" src="https://github.com/user-attachments/assets/bcc9b395-6f6a-4918-b558-3f2a89bf86ca" />
+User growth decelerating dramatically:
+- Feb 2025: +150%
+- Apr-Jun 2025: +40-50%
+- 2026: +5-15% (single digits)
+- Recent: Going negative
 <img width="989" height="490" alt="image" src="https://github.com/user-attachments/assets/5e296e0a-828d-436c-873f-c828c5c333b4" />
+AOV hovering around same level throughout period. Flat line with shaded area to mean. No monetization improvement per user.
 <img width="990" height="490" alt="image" src="https://github.com/user-attachments/assets/d072e595-6f13-448c-b56d-a230735f43ed" />
+  Blue line (user growth): Strong & declining Red dashed line (AOV growth): Flat & volatile.
+  Shaded gap highlights the opportunity: users growing but no monetization per user
 <img width="989" height="490" alt="image" src="https://github.com/user-attachments/assets/3e1137ff-c17e-4a15-b287-6f4d704dbc76" />
+Transaction count follows similar pattern to users — peaked mid-2025, now declining. Each transaction is smaller (AOV flat) AND fewer transactions overall = double pressure on revenue
 <img width="989" height="490" alt="image" src="https://github.com/user-attachments/assets/502e37ae-8fc0-4aa9-92a9-f13aa138c3a8" />
+ARPU shows whether monetization per user improving. If declining despite AOV flat = users transacting less frequently (retention problem)
 
 
 
