@@ -83,12 +83,11 @@ order by month asc;
 
 ## Data Visualization
 
-### 1. Macro Revenue & Growth Performance
-
 #### GTV vs. Net Revenue Trajectory
 <img width="989" height="490" alt="image" src="https://github.com/user-attachments/assets/ffd3f26c-5838-41b3-a1c0-156fc190a9d5" />
 
-* ** Both metrics track together (flat take rate assumption). GTV peaks around mid-2025 at 50M+, then stabilizes around 20-30M in 2026. Perfect correlation expected because net revenue = GTV × 2.5%.
+* Both metrics track together (flat take rate assumption). GTV peaks around mid-2025 at 50M+, then stabilizes around 20-30M in 2026. Perfect correlation expected because net revenue = GTV × 2.5%.
+
 
 <img width="990" height="490" alt="image" src="https://github.com/user-attachments/assets/7a7b13d1-32ca-4d76-879a-a50d364652a8" />
 Growth trajectory shows clear phases:
