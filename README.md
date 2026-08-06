@@ -88,37 +88,33 @@ order by month asc;
 
 * Both metrics track together (flat take rate assumption). GTV peaks around mid-2025 at 50M+, then stabilizes around 20-30M in 2026. Perfect correlation expected because net revenue = GTV × 2.5%.
 
-
+#### MoM GTV Growth
 <img width="990" height="490" alt="image" src="https://github.com/user-attachments/assets/7a7b13d1-32ca-4d76-879a-a50d364652a8" />
-Growth trajectory shows clear phases:
-- **Feb 2025:** +188% (base effect)
-- **Mar-Apr 2025:** +53-61% (hypergrowth cooling)
-- **May-Dec 2025:** +20-45% (normalizing)
-- **2026:** +3-30% (mature phase)
-- **Jul 2026:** -13% (first contraction)
+* MoM GTV shows clear phases: Revenue growth cooled down significantly from an early boom (+188% in Feb 2025) to a steady pace (+3–30%), eventually hitting its first drop in July 2026 (-13%)
 
+#### Active Paying Users Trend
 <img width="989" height="490" alt="image" src="https://github.com/user-attachments/assets/6863bffe-26cc-464f-9753-a0556715f0ec" />
-User base peaked mid-2025, now declining. Peak is annotated. Declining user acquisition is main concern — harder to grow user base despite continued efforts.
+* he active user base hit its peak in mid-2025 and has been slowly sliding, pointing to challenges in user acquisition and retention.
 
+#### MoM User Growth Rate
 <img width="990" height="490" alt="image" src="https://github.com/user-attachments/assets/bcc9b395-6f6a-4918-b558-3f2a89bf86ca" />
-User growth decelerating dramatically:
-- Feb 2025: +150%
-- Apr-Jun 2025: +40-50%
-- 2026: +5-15% (single digits)
-- Recent: Going negative
+* User acquisition slowed sharply from +150% in early 2025 down to low digits (+5–15%) in 2026, eventually slipping into negative growth.
 
+#### Average Order Value (AOV)
 <img width="989" height="490" alt="image" src="https://github.com/user-attachments/assets/5e296e0a-828d-436c-873f-c828c5c333b4" />
-AOV hovering around same level throughout period. Flat line with shaded area to mean. No monetization improvement per user.
+* Average spending per order stayed completely flat over time, meaning users aren't buying higher-value items.
 
+#### Growth Driver Gap (Users vs. AOV)
 <img width="990" height="490" alt="image" src="https://github.com/user-attachments/assets/d072e595-6f13-448c-b56d-a230735f43ed" />
-  Blue line (user growth): Strong & declining Red dashed line (AOV growth): Flat & volatile.
-  Shaded gap highlights the opportunity: users growing but no monetization per user
+* The gap between fluctuating user growth and flat AOV proves that growth was driven purely by bringing in more users, not by getting people to spend more.
 
+#### Total Monthly Orders
 <img width="989" height="490" alt="image" src="https://github.com/user-attachments/assets/3e1137ff-c17e-4a15-b287-6f4d704dbc76" />
-Transaction count follows similar pattern to users — peaked mid-2025, now declining. Each transaction is smaller (AOV flat) AND fewer transactions overall = double pressure on revenue
+* Total monthly orders fell right alongside active users, putting double pressure on overall revenue since spending per order didn't grow either.
 
+#### Average Revenue Per User (ARPU)
 <img width="989" height="490" alt="image" src="https://github.com/user-attachments/assets/502e37ae-8fc0-4aa9-92a9-f13aa138c3a8" />
-ARPU shows whether monetization per user improving. If declining despite AOV flat = users transacting less frequently (retention problem)
+*  A declining ARPU while basket size remains flat is a clear sign that existing users are buying less frequently.
 
 
 
@@ -128,10 +124,10 @@ ARPU shows whether monetization per user improving. If declining despite AOV fla
 
 | Priority | Initiative | Impact | Status |
 |----------|------------|--------|--------|
-| 🔴 **1** | **Cohort Retention Analysis** | HIGH | Planned |
-| 🟡 **2** | **Jul Contraction Root Cause** | HIGH | Planned |
-| 🟡 **3** | **Segment Breakdown by Product** | MEDIUM | Planned |
-| 🟢 **4** | **3-Month Forecast** |MEDIUM | Planned |
+| 🔴 | **Cohort Retention Analysis** | High | Planned |
+| 🟡 | **Jul Contraction Root Cause** | High | Planned |
+| 🟡 | **Segment Breakdown by Product** | Medium | Planned |
+| 🟢 | **3-Month Forecast** | Medium | Planned |
 
 ### Priority 1 — Cohort Retention
 
