@@ -89,7 +89,9 @@ Key decision: Rounding only at final output, preserve raw precision in calculati
 
 ```sql
 df_result = q("""
-with raw_monthly as (select strftime('%Y-%m', created_at) AS month, count (trx_id) as total_orders, count (distinct (user_id)) as active_paying_user, sum (amount) as total_gtv_raw, sum (amount * 0.025) as total_net_revenue_raw
+with raw_monthly as (select strftime('%Y-%m', created_at) AS month,
+count (trx_id) as total_orders, count (distinct (user_id)) as active_paying_user,
+sum (amount) as total_gtv_raw, sum (amount * 0.025) as total_net_revenue_raw
 from transactions
 where status ='success'
 group by month
@@ -105,7 +107,13 @@ lag (total_gtv_raw / total_orders) over (order by month) as prev_aov
 from raw_monthly
 )
 select month,
-  round(total_gtv_raw) as total_gtv,round(total_net_revenue_raw) as total_net_revenue, round(aov_raw, 2) as aov, active_paying_user, total_orders, round(((total_gtv_raw - prev_gtv_raw) * 100.0) / nullif(prev_gtv_raw, 0),2) as mom_gtv_growth_pct, round(((total_net_revenue_raw - prev_net_revenue) * 100.0) / nullif(prev_net_revenue, 0), 2) as mom_net_revenue_growth_pct, round(((active_paying_user - prev_active_pay_user) * 100.0) / nullif(prev_active_pay_user, 0), 2) as mom_user_growth_pct, round(((aov_raw - prev_aov) * 100.0) / nullif(prev_aov, 0), 2) as mom_aov_growth_pct
+round(total_gtv_raw) as total_gtv,
+round(total_net_revenue_raw) as total_net_revenue,
+round(aov_raw, 2) as aov, active_paying_user, total_orders,
+round(((total_gtv_raw - prev_gtv_raw) * 100.0) / nullif(prev_gtv_raw, 0),2) as mom_gtv_growth_pct,
+round(((total_net_revenue_raw - prev_net_revenue) * 100.0) / nullif(prev_net_revenue, 0), 2) as mom_net_revenue_growth_pct,
+round(((active_paying_user - prev_active_pay_user) * 100.0) / nullif(prev_active_pay_user, 0), 2) as mom_user_growth_pct,
+round(((aov_raw - prev_aov) * 100.0) / nullif(prev_aov, 0), 2) as mom_aov_growth_pct
 from lag_monthly
 order by month asc;
 
@@ -121,6 +129,3 @@ If extending this analysis:
 3. Is Jul contraction seasonal? (need 2-3 years of data to confirm)
 
 ---
-
-**Status**: ✅ Complete  
-**Dataset**: 2025-01 to 2026-07 (synthetic)
