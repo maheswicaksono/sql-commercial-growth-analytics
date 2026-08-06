@@ -11,7 +11,7 @@ This project analyzes 19 months of fintech transaction data (Feb 2025 – Jul 20
 **Core finding:**
 - Growth is **volume-driven** — user acquisition is the primary lever
 - AOV is **flat** — users are not spending more per transaction
-- Growth rate is **decelerating** — from +188% (Feb 2025) to -13% (Jul 2026)
+- Growth rate has **slow down** — from +188% (Feb 2025) to -13% (Jul 2026)
 - **Jul 2026 contraction** warrants immediate investigation (seasonal vs structural)
 
 ---
@@ -20,9 +20,9 @@ This project analyzes 19 months of fintech transaction data (Feb 2025 – Jul 20
 
 | Metric | Definition | Formula |
 |--------|------------|---------|
-| **GTV** | Gross Transaction Value | `SUM(amount)` for successful transactions |
+| **GTV** | Gross Transaction Value | `sum (amount)` for successful transactions |
 | **Net Revenue** | Estimated platform revenue | `GTV × 2.5%` (flat take rate assumed) |
-| **Active Paying Users** | Unique users per month | `COUNT(DISTINCT user_id)` with ≥1 successful transaction |
+| **Active Paying Users** | Unique users per month | `count (distinct user_id)` with ≥1 successful transaction |
 | **AOV** | Average Order Value | `GTV / Total Orders` |
 | **MoM Growth %** | Month-over-month change | `(Current - Previous) / Previous × 100%` |
 | **ARPU** | Avg Revenue Per User | `GTV / Active Users` |
@@ -51,49 +51,32 @@ raw_monthly → lag_monthly → final SELECT
 ## SQL Query
 
 ```sql
-WITH raw_monthly AS (
-  SELECT
-    strftime('%Y-%m', created_at) AS month,
-    COUNT(trx_id) AS total_orders,
-    COUNT(DISTINCT user_id) AS active_paying_user,
-    SUM(amount) AS total_gtv_raw,
-    SUM(amount * 0.025) AS total_net_revenue_raw
-  FROM transactions
-  WHERE status = 'success'
-  GROUP BY month
-  ORDER BY month ASC
+with raw_monthly as (select strftime('%Y-%m', created_at) AS month, count (trx_id) as total_orders, count (distinct (user_id)) as active_paying_user, sum (amount) as total_gtv_raw, sum (amount * 0.025) as total_net_revenue_raw
+from transactions
+where status ='success'
+group by month
+order by month asc
 ),
 
-lag_monthly AS (
-  SELECT
-    month, total_orders, active_paying_user,
-    total_net_revenue_raw, total_gtv_raw,
-    (total_gtv_raw / total_orders) AS aov_raw,
-    LAG(total_gtv_raw) OVER (ORDER BY month) AS prev_gtv_raw,
-    LAG(total_net_revenue_raw) OVER (ORDER BY month) AS prev_net_revenue,
-    LAG(active_paying_user) OVER (ORDER BY month) AS prev_active_pay_user,
-    LAG(total_gtv_raw / total_orders) OVER (ORDER BY month) AS prev_aov
-  FROM raw_monthly
+lag_monthly as (
+select month, total_orders, active_paying_user, total_net_revenue_raw, total_gtv_raw,
+(total_gtv_raw / total_orders) as aov_raw,
+lag (total_gtv_raw) over (order by month) as prev_gtv_raw,
+lag (total_net_revenue_raw) over (order by month) as prev_net_revenue,
+lag (active_paying_user) over (order by month) as prev_active_pay_user,
+lag (total_gtv_raw / total_orders) over (order by month) as prev_aov
+from raw_monthly
 )
 
-SELECT
-  month,
-  ROUND(total_gtv_raw) AS total_gtv,
-  ROUND(total_net_revenue_raw) AS total_net_revenue,
-  ROUND(aov_raw, 2) AS aov,
-  active_paying_user,
-  total_orders,
-  ROUND(((total_gtv_raw - prev_gtv_raw) * 100.0) / NULLIF(prev_gtv_raw, 0), 2) AS mom_gtv_growth_pct,
-  ROUND(((total_net_revenue_raw - prev_net_revenue) * 100.0) / NULLIF(prev_net_revenue, 0), 2) AS mom_net_revenue_growth_pct,
-  ROUND(((active_paying_user - prev_active_pay_user) * 100.0) / NULLIF(prev_active_pay_user, 0), 2) AS mom_user_growth_pct,
-  ROUND(((aov_raw - prev_aov) * 100.0) / NULLIF(prev_aov, 0), 2) AS mom_aov_growth_pct
-FROM lag_monthly
-ORDER BY month ASC;
+select month,
+  round(total_gtv_raw) as total_gtv,round(total_net_revenue_raw) as total_net_revenue, round(aov_raw, 2) as aov, active_paying_user, total_orders, round(((total_gtv_raw - prev_gtv_raw) * 100.0) / nullif(prev_gtv_raw, 0),2) as mom_gtv_growth_pct, round(((total_net_revenue_raw - prev_net_revenue) * 100.0) / nullif(prev_net_revenue, 0), 2) as mom_net_revenue_growth_pct, round(((active_paying_user - prev_active_pay_user) * 100.0) / nullif(prev_active_pay_user, 0), 2) as mom_user_growth_pct, round(((aov_raw - prev_aov) * 100.0) / nullif(prev_aov, 0), 2) as mom_aov_growth_pct
+from lag_monthly
+order by month asc;
 ```
 
 ---
 
-## 📈 Python Visualization
+## Python Visualization
 
 Run this in Google Colab after executing the SQL query above:
 
@@ -211,7 +194,7 @@ ax7.set_title('Total Orders per Month', fontweight='bold', color='#1A3A5C')
 ax7.yaxis.set_major_formatter(mticker.FuncFormatter(lambda x, _: f'{x:,.0f}'))
 ax7.tick_params(axis='x', rotation=45)
 
-# ── Chart 8: ARPU (derived) ──
+# ── Chart 8: ARPU (extracted) ──
 df['arpu'] = df['total_gtv'] / df['active_paying_user']
 ax8 = fig.add_subplot(4, 2, 8)
 ax8.plot(df['month'], df['arpu'], marker='o', color=ORANGE, linewidth=2.5, markersize=5)
