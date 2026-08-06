@@ -95,7 +95,7 @@ Growth trajectory shows clear phases:
 - **Mar-Apr 2025:** +53-61% (hypergrowth cooling)
 - **May-Dec 2025:** +20-45% (normalizing)
 - **2026:** +3-30% (mature phase)
-- **Jul 2026:** -13% (🚨 first contraction)
+- **Jul 2026:** -13% (first contraction)
 
 <img width="989" height="490" alt="image" src="https://github.com/user-attachments/assets/6863bffe-26cc-464f-9753-a0556715f0ec" />
 User base peaked mid-2025, now declining. Peak is annotated. Declining user acquisition is main concern — harder to grow user base despite continued efforts.
