@@ -57,7 +57,6 @@ sum (amount * 0.025) as total_net_revenue_raw
 from transactions
 where status ='success'
 group by month
-order by month asc
 ),
 
 lag_monthly as (
